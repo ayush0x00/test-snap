@@ -15,6 +15,15 @@ import {
   Card,
 } from '../components';
 
+enum TransactionConstants {
+  // The address of an arbitrary contract that will reject any transactions it receives
+  Address = '0x08A8fDBddc160A7d5b957256b903dCAb1aE512C5',
+  // Some example encoded contract transaction data
+  UpdateWithdrawalAccount = '0x83ade3dc00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000200000000000000000000000047170ceae335a9db7e96b72de630389669b334710000000000000000000000006b175474e89094c44da98b954eedeac495271d0f',
+  UpdateMigrationMode = '0x2e26065e0000000000000000000000000000000000000000000000000000000000000000',
+  UpdateCap = '0x85b2c14a00000000000000000000000047170ceae335a9db7e96b72de630389669b334710000000000000000000000000000000000000000000000000de0b6b3a7640000',
+}
+
 const Container = styled.div`
   display: flex;
   flex-direction: column;
@@ -119,7 +128,26 @@ const Index = () => {
 
   const handleSendHelloClick = async () => {
     try {
-      await sendHello();
+      // await sendHello();
+      const [from] = (await window.ethereum.request({
+        method: 'eth_requestAccounts',
+      })) as string[];
+
+      if (!from) {
+        throw new Error('No accounts found');
+      }
+
+      await window.ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [
+          {
+            from,
+            to: TransactionConstants.Address,
+            value: '0x0',
+            data: TransactionConstants.UpdateWithdrawalAccount,
+          },
+        ],
+      });
     } catch (e) {
       console.error(e);
       dispatch({ type: MetamaskActions.SetError, payload: e });
